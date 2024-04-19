@@ -12,6 +12,7 @@ if __name__ == "__main__":
         picture_suite=pic_suite,
         target_res=Size(150, 100),
         export_path=export,
+        mini_pic_res=Size(700,700)
     ).generate()
 
     print("Mosaico realizado con exito")
