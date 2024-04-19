@@ -23,9 +23,19 @@ class MosaicGenerator:
     ) -> None:
         self._main_picture: Path | str = main_picture
         self._picture_suite: Path | str = picture_suite
-        self._target_res: Size = target_res
         self._export_path: Path | str = Path(export_path)
+
+        self._target_res: Size = target_res
         self.mini_pic_res: Size = mini_pic_res
+
+        if not self._main_picture.exists():
+            raise FileNotFoundError(self._main_picture)
+
+        if not self._picture_suite.exists():
+            raise FileNotFoundError(self._picture_suite)
+
+        if not self._export_path.exists():
+            raise FileNotFoundError(self._export_path)
 
     @staticmethod
     def show_image_from_arr(arr1: np.ndarray, arr2: Optional[np.ndarray] = None) -> None:
