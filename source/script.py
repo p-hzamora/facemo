@@ -132,34 +132,3 @@ class MosaicGenerator:
     def load_main_picture(self) -> np.ndarray:
         face_im_arr = self.load_image(self._main_picture)
         return face_im_arr
-
-
-# def reduce_resolution():
-#     cuadradas_high_res = Path(__file__).parent.parent/"Images"/"Mosaic-Images-marina-cuadrada"
-#     for file in cuadradas_high_res.rglob("*.png"):
-#         image_arr: np.ndarray = MosaicGenerator.load_image(file)
-#         limg: Image.Image = Image.fromarray(image_arr)
-
-#         resize_arr = MosaicGenerator.resize_image(limg, (side, side))
-#         resize_img: Image.Image = Image.fromarray(resize_arr)
-
-#         new_file =
-#         resize_img.save(new_file.with_suffix(".png"))
-#         # MosaicGenerator.show_image_from_arr(image_arr, resize_arr)
-
-
-if __name__ == "__main__":
-    main_pic = Path(__file__).parent.parent / "Images" / "cuadrada_mano.png"
-    pic_suite = Path(__file__).parent.parent / "Images" / "Mosaic-Images-real"
-    export = (
-        Path(__file__).parent.parent / "Images" / "Exports" / "exportacion_marina.jpg"
-    )
-
-    MosaicGenerator(
-        main_picture=main_pic,
-        picture_suite=pic_suite,
-        target_res=Size(150, 100),
-        export_path=export,
-    ).generate()
-
-    print("Mosaico realizado con exito")
