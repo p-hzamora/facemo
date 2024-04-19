@@ -1,0 +1,9 @@
+pandas
+notebook
+ipykernel
+pillow
+matplotlib
+bs4
+requests
+scipy
+pipfile
