@@ -14,26 +14,24 @@ def reduce_resolution(folder_to_reduce: Path, destiny_folder: Path, size: int = 
         raise FileExistsError(f"La carpeta {destiny_folder.name} ya existe.")
 
     for file in folder_to_reduce.rglob("*.png"):
-        image_arr: np.ndarray = MosaicGenerator.load_image(file)
+        image_arr: np.ndarray = MosaicGenerator.convert_image_path_to_array(file)
         limg: Image.Image = Image.fromarray(image_arr)
-        
-        resize_arr = MosaicGenerator.resize_image(limg, (size, size))
+
+        resize_arr = MosaicGenerator._resize_image(limg, (size, size))
         resize_img: Image.Image = Image.fromarray(resize_arr)
 
         resize_img.save(destiny_folder.joinpath(file.name))
         # MosaicGenerator.show_image_from_arr(image_arr, resize_arr)
 
 
-def validate_sys_argv(arg: str) -> tuple[str, int]:
-    ...
+def validate_sys_argv(arg: str) -> tuple[str, int]: ...
 
 
 if __name__ == "__main__":
-
     high_res_folder = Path(__file__).parent / "Images" / "Mosaic-Images-marina-cuadrada"
 
-    default_folder_output:str = "Mosaic-Images-marina-reduce"
-    default_new_folder = Path(__file__).parent / "Images"
+    default_folder_output: str = "Mosaic-Images-marina-reduce"
+    default_new_folder = Path(__file__).parent.parent
     default_size = 200
 
     sys.argv.remove(sys.argv[0])
