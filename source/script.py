@@ -1,4 +1,4 @@
-from typing import NamedTuple, Optional
+from typing import NamedTuple, Optional, overload
 from PIL import Image, ImageOps
 import numpy as np
 from matplotlib import pyplot as plt
@@ -13,31 +13,70 @@ class Size(NamedTuple):
 
 
 class MosaicGenerator:
+    @overload
+    def __init(
+        self,
+        main_picture: Path | str,
+        picture_suite: Path | str,
+        export_path: Path | str,
+        canvas_width: int,
+        main_transparency: float = 0.67,
+        mini_pic_res: Size = None,
+    ) -> None: ...
+
+    @overload
+    def __init(
+        self,
+        main_picture: Path | str,
+        picture_suite: Path | str,
+        export_path: Path | str,
+        canvas_height: int,
+        main_transparency: float = 0.67,
+        mini_pic_res: Size = None,
+    ) -> None: ...
+
     def __init__(
         self,
         main_picture: Path | str,
         picture_suite: Path | str,
-        target_res: Size,
         export_path: Path | str,
         main_transparency: float = 0.67,
-        mini_pic_res: Size = None,
+        canvas_res: Optional[Size] = None,
+        mini_pic_res: Optional[Size] = None,
+        canvas_width: Optional[int] = None,
+        canvas_height: Optional[int] = None,
     ) -> None:
         self._main_picture: Path | str = main_picture
         self._picture_suite: Path | str = picture_suite
         self._export_path: Path | str = Path(export_path)
         self._main_transparency: float = main_transparency
 
-        self._target_res: Size = target_res
         self.mini_pic_res: Size = mini_pic_res
 
-        self._canvas: Image.Image = Image.new(
-            "RGBA",
-            (
-                self.mini_pic_res.width * self._target_res.width,
-                self.mini_pic_res.height * self._target_res.height,
-            ),
-        )
         self._validate_paths()
+        self._main_img: Image.Image = Image.open(main_picture)
+
+        if canvas_res:
+            self.__canvas_res(canvas_res)
+        elif canvas_width:
+            self.__init_width(canvas_width)
+        elif canvas_height:
+            self.__init_height(canvas_height)
+
+        self._canvas: Image.Image = self.__create_canvas()
+
+    def __init_width(self, width: int):
+        wpx, hpx = self._main_img.size
+        height = int(round((hpx / wpx) * width,0))
+        self._canvas_res = Size(height=height, width=width)
+
+    def __init_height(self, height):
+        wpx, hpx = self._main_img.size
+        width = int(round((wpx / hpx) * height,0))
+        self._canvas_res = Size(height=height, width=width)
+
+    def __canvas_res(self, canvas_res: int):
+        self._canvas_res = canvas_res
 
     @property
     def canvas(self) -> Image.Image:
@@ -57,7 +96,7 @@ class MosaicGenerator:
 
     def save(self) -> None:
         export_name = (
-            f"{self._target_res.width}x{self._target_res.height}-"
+            f"{self._canvas_res.width}x{self._canvas_res.height}-"
             f"min_res {self.mini_pic_res.width}x{self.mini_pic_res.height}-"
             "Export.png"
         )
@@ -69,6 +108,15 @@ class MosaicGenerator:
     # endregion
 
     # region Private methods
+    def __create_canvas(self) -> Image.Image:
+        return Image.new(
+            "RGBA",
+            (
+                self.mini_pic_res.width * self._canvas_res.width,
+                self.mini_pic_res.height * self._canvas_res.height,
+            ),
+        )
+
     def _create_image_list(self) -> list[np.ndarray]:
         images: list[np.ndarray] = []
 
@@ -114,8 +162,8 @@ class MosaicGenerator:
         mos_template: np.ndarray = self._create_mos_template()
         tree = spatial.KDTree(image_values)
 
-        for i in range(self._target_res.height):
-            for j in range(self._target_res.width):
+        for i in range(self._canvas_res.height):
+            for j in range(self._canvas_res.width):
                 template = mos_template[i, j]
 
                 match = tree.query(template, k=40)
@@ -137,7 +185,7 @@ class MosaicGenerator:
         MAX_WIDTH = face_im_arr_with_alpha.shape[1]
 
         return face_im_arr_with_alpha[
-            :: (MAX_HEIGHT // self._target_res.height), :: (MAX_WIDTH // self._target_res.width)
+            :: (MAX_HEIGHT // self._canvas_res.height), :: (MAX_WIDTH // self._canvas_res.width)
         ]
 
     def _add_base_image_to_canvas(self) -> None:
