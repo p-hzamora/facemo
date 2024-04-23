@@ -1,22 +1,21 @@
 from pathlib import Path
-from source.script import MosaicGenerator, Size
+from src import MosaicGenerator, Size
 
 
 if __name__ == "__main__":
-    main_pic = Path(__file__).parent / "Images" / "segunda opcion.jpg"
-    pic_suite = Path(__file__).parent.parent / "720pixels"
-    export = Path(__file__).parent / "Images" / "Exports"
+    downloads = Path.home()/"Downloads"
+    main_pic = downloads/"facemo_project"/"main_image"/ "marina_mascarilla.png"
+    pic_suite = downloads/"facemo_project"/"square_pictures"/"300pixels"
 
     mosaico = MosaicGenerator(
         main_picture=main_pic,
         picture_suite=pic_suite,
-        canvas_width=56,
+        canvas_width=1000,
         # target_res=Size(63,94),
-        export_path=export,
-        mini_pic_res=Size(350, 350),
+        mini_pic_res=Size(1, 1),
     )
     mosaico.generate()
     mosaico.canvas.show()
-    mosaico.save()
+    mosaico.save(downloads/"aniversario"/"fotos finales")
 
     print("Mosaico realizado con exito")
