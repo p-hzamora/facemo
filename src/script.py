@@ -14,22 +14,20 @@ class Size(NamedTuple):
 
 class MosaicGenerator:
     @overload
-    def __init(
+    def __init__(
         self,
         main_picture: Path | str,
         picture_suite: Path | str,
-        export_path: Path | str,
         canvas_width: int,
         main_transparency: float = 0.67,
         mini_pic_res: Size = None,
     ) -> None: ...
 
     @overload
-    def __init(
+    def __init__(
         self,
         main_picture: Path | str,
         picture_suite: Path | str,
-        export_path: Path | str,
         canvas_height: int,
         main_transparency: float = 0.67,
         mini_pic_res: Size = None,
@@ -39,7 +37,6 @@ class MosaicGenerator:
         self,
         main_picture: Path | str,
         picture_suite: Path | str,
-        export_path: Path | str,
         main_transparency: float = 0.67,
         canvas_res: Optional[Size] = None,
         mini_pic_res: Optional[Size] = None,
@@ -48,7 +45,6 @@ class MosaicGenerator:
     ) -> None:
         self._main_picture: Path | str = main_picture
         self._picture_suite: Path | str = picture_suite
-        self._export_path: Path | str = Path(export_path)
         self._main_transparency: float = main_transparency
 
         self.mini_pic_res: Size = mini_pic_res
@@ -57,7 +53,7 @@ class MosaicGenerator:
         self._main_img: Image.Image = Image.open(main_picture)
 
         if canvas_res:
-            self.__canvas_res(canvas_res)
+            self.__init_canvas_res(canvas_res)
         elif canvas_width:
             self.__init_width(canvas_width)
         elif canvas_height:
@@ -67,15 +63,15 @@ class MosaicGenerator:
 
     def __init_width(self, width: int):
         wpx, hpx = self._main_img.size
-        height = int(round((hpx / wpx) * width,0))
+        height = int(round((hpx / wpx) * width, 0))
         self._canvas_res = Size(height=height, width=width)
 
     def __init_height(self, height):
         wpx, hpx = self._main_img.size
-        width = int(round((wpx / hpx) * height,0))
+        width = int(round((wpx / hpx) * height, 0))
         self._canvas_res = Size(height=height, width=width)
 
-    def __canvas_res(self, canvas_res: int):
+    def __init_canvas_res(self, canvas_res: int):
         self._canvas_res = canvas_res
 
     @property
@@ -94,14 +90,17 @@ class MosaicGenerator:
         self._add_base_image_to_canvas()
         return None
 
-    def save(self) -> None:
+    def save(self, downloaded_folder: str | Path) -> None:
+        if isinstance(downloaded_folder, Path):
+            downloaded_folder = Path(downloaded_folder)
+
         export_name = (
             f"{self._canvas_res.width}x{self._canvas_res.height}-"
             f"min_res {self.mini_pic_res.width}x{self.mini_pic_res.height}-"
             "Export.png"
         )
 
-        path: Path = self._export_path / export_name
+        path: Path = downloaded_folder / export_name
         self.canvas.save(path)
         return path
 
@@ -231,9 +230,6 @@ class MosaicGenerator:
 
         if not self._picture_suite.exists():
             raise FileNotFoundError(self._picture_suite)
-
-        if not self._export_path.exists():
-            raise FileNotFoundError(self._export_path)
         return True
 
     @staticmethod

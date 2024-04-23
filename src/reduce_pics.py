@@ -4,7 +4,7 @@ from pathlib import Path
 from PIL import Image
 import numpy as np
 
-from source.script import MosaicGenerator
+from script import MosaicGenerator
 
 
 def reduce_resolution(folder_to_reduce: Path, destiny_folder: Path, size: int = 200):
